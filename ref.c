@@ -22,6 +22,31 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // listen
+    if (listen(sock, 5) < 0) {
+        perror("listen");
+        return 1;
+    }
+
+    // accept
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    int client_sock = accept(sock, (struct sockaddr *)&client_addr, &client_len);
+    if (client_sock < 0) {
+        perror("accept");
+        return 1;
+    }
+    printf("Accepted connection from %s:%d\n",
+           inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+
+    // read
+    char buffer[1024];
+    ssize_t bytes_read = read(client_sock, buffer, sizeof(buffer) - 1);
+
+
+    // Close 
+    close(client_sock);
 
     return 0;
 }
