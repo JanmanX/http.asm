@@ -4,9 +4,9 @@
 
 ////////// DEFINES
 // syscalls
-.set SYS_OPEN, 2
 .set SYS_READ, 3
 .set SYS_WRITE, 4
+.set SYS_OPEN, 5
 .set SYS_CLOSE, 6
 .set SYS_ACCEPT, 30
 .set SYS_SOCKET, 97
@@ -48,18 +48,52 @@ handler:
         mov x0, x0 // client fd
         adrp x1, buffer@PAGE
         add x1, x1, buffer@PAGEOFF
-        mov x2, #10 // length of buffer
+        mov x2, #20 // length of buffer
         mov x16, SYS_READ // syscall number
         svc #0x80
 
-// Write
+// Write request to stdout
+// 64	AUE_WRITE	ALL	{ ssize_t write(int fd, const void *buf, size_t count); }
+        mov x0, 1 // stdout
+        adrp x1, buffer@PAGE
+        add x1, x1, buffer@PAGEOFF
+        mov x2, #10 // length of buffer
+        mov x16, SYS_WRITE // syscall number
+        svc #0x80
+
+////////////// Open response file and write to file_buffer /////////////////
+// 57	AUE_OPEN	ALL	{ int open(const char *pathname, int flags); }
+        adrp x0, filepath@PAGE
+        add x0, x0, filepath@PAGEOFF
+        mov x1, #0x00000000 // O_RDONLY
+        mov x16, SYS_OPEN
+        svc #0x80
+
+        mov x19 , x0 // save file fd
+
+// read file
+// 63	AUE_READ	ALL	{ ssize_t read(int fd, void *buf, size_t count); }
+        mov x0, x0 // file fd
+        adrp x1, file_buffer@PAGE
+        add x1, x1, file_buffer@PAGEOFF
+        mov x2, #8192 // length of buffer
+        mov x16, SYS_READ // syscall number
+        svc #0x80
+
+// close
+// 57	AUE_CLOSE	ALL	{ int close(int fd); }
+        mov x0, x19 // file fd
+        mov x16, SYS_CLOSE
+        svc #0x80
+
+// Write response to client
 // 64	AUE_WRITE	ALL	{ ssize_t write(int fd, const void *buf, size_t count); }
         adrp x0, socket_client_fd@PAGE
         add x0, x0, socket_client_fd@PAGEOFF
         ldr x0, [x0]
-        adrp x1, response@PAGE
-        add x1, x1, response@PAGEOFF
-        mov x2, #100 // length of buffer
+        adrp x1, file_buffer@PAGE
+        add x1, x1, file_buffer@PAGEOFF
+        mov x2, #8192// length of buffer
         mov x16, SYS_WRITE
         svc 0x80
 
