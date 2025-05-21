@@ -39,7 +39,8 @@ sockaddr_in:
         .byte 0x10
         .byte PF_INET          // sin_family
         .hword 0x901F            // sin_port (port 8080 in network order 0x1F90 = 8080)
-        .word 0x0100007f       // sin_addr = 127.0.0.1
+        // .word 0x0100007f       // sin_addr = 127.0.0.1
+        .word 0x00000000       // sin_addr = INADDR_ANY
         .byte 0               // zero
         .byte 0               // zero
         .byte 0               // zero
