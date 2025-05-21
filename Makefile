@@ -5,7 +5,7 @@ handler.o: handler.asm
 	as -arch arm64 -o handler.o handler.asm
 
 main.bin: main.o handler.o
-	ld -o main.bin -e _start main.o handler.o -syslibroot xcrun  -e _start -arch arm64
+	ld -o main.bin -e _start main.o handler.o  -e _start -arch arm64
 
 run: main.bin
 	echo "---- RUNNING ----"
