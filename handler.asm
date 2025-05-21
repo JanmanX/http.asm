@@ -38,7 +38,7 @@ handler:
         mov x0, x0 // client fd
         adrp x1, buffer@PAGE
         add x1, x1, buffer@PAGEOFF
-        mov x2, #20 // length of buffer
+        mov x2, #512// length of buffer
         mov x16, SYS_READ // syscall number
         svc #0x80
 
@@ -47,7 +47,7 @@ handler:
         mov x0, 1 // stdout
         adrp x1, buffer@PAGE
         add x1, x1, buffer@PAGEOFF
-        mov x2, #10 // length of buffer
+        mov x2, #512// length of buffer
         mov x16, SYS_WRITE // syscall number
         svc #0x80
 
