@@ -28,8 +28,6 @@
 .set IPPROTO_TCP, 6
 
 
-
-
 .data
 socket_fd:
         .space 8
@@ -50,11 +48,6 @@ sockaddr_in:
         .byte 0               // zero
         .byte 0               // zero
         .byte 0               // zero
-
-
-buffer:
-        .space 1024
-
 
 
 .text
@@ -108,32 +101,13 @@ accept_loop:
         add X1, X1, socket_client_fd@PAGEOFF
         str X0, [X1]
 
-// Read
-// 63	AUE_READ	ALL	{ ssize_t read(int fd, void *buf, size_t count); }
-        mov x0, x0 // client fd
-        adrp x1, buffer@PAGE
-        add x1, x1, buffer@PAGEOFF
-        mov x2, #10 // length of buffer
-        mov x16, SYS_READ // syscall number
-        svc #0x80
 
-// Write
-// 64	AUE_WRITE	ALL	{ ssize_t write(int fd, const void *buf, size_t count); }
-        mov x0, #1 // stdout
-        mov x16, SYS_WRITE
-        adrp x1, buffer@PAGE
-        add x1, x1, buffer@PAGEOFF
-        mov x2, #1023 // length of buffer
-        svc 0x80
-
-// Close
-// 57	AUE_CLOSE	ALL	{ int close(int fd); }
-        adrp x0, socket_client_fd@PAGE
-        add x0, x0, socket_client_fd@PAGEOFF
-        ldr x0, [x0]
-        mov x16, SYS_CLOSE
-        svc #0x80
-
+// Have the client, lets call the handler
+// handler(int client_fd)
+        adrp X0, socket_client_fd@PAGE
+        add X0, X0, socket_client_fd@PAGEOFF
+        ldr X0, [X0] // load client fd from memory
+        bl handler
 
 // Return to accept loop
         b accept_loop
@@ -147,32 +121,3 @@ accept_loop:
 
 
 helloworld:      .ascii  "Hello World!\n"
-
-
-//
-// Assembler program to print "Hello World!"
-// to stdout.
-//
-// X0-X2 - parameters to linux function services
-// X16 - linux function number
-//
-// .global _start             // Provide program starting address to linker
-// .align 2
-// 
-// // Setup the parameters to print hello world
-// // and then call Linux to do it.
-// 
-// _start: mov X0, #1     // 1 = StdOut
-//         adr X1, helloworld // string to print
-//         mov X2, #13     // length of our string
-//         mov X16, #4     // MacOS write system call
-//         svc 0     // Call linux to output the string
-// 
-// // Setup the parameters to exit the program
-// // and then call Linux to do it.
-// 
-//         mov     X0, #0      // Use 0 return code
-//         mov     X16, #1     // Service command code 1 terminates this program
-//         svc     0           // Call MacOS to terminate the program
-// 
-// helloworld:      .ascii  "Hello World!\n"

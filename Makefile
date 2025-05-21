@@ -1,8 +1,11 @@
 main.o: main.asm
 	as -arch arm64 -o main.o main.asm
 
-main.bin: main.o
-	ld -o main.bin -e _start main.o -syslibroot xcrun  -e _start -arch arm64
+handler.o: handler.asm
+	as -arch arm64 -o handler.o handler.asm
+
+main.bin: main.o handler.o
+	ld -o main.bin -e _start main.o handler.o -syslibroot xcrun  -e _start -arch arm64
 
 run: main.bin
 	echo "---- RUNNING ----"
@@ -10,6 +13,6 @@ run: main.bin
 
 
 clean:
-	rm -f main.o main.bin
+	rm -f main.o handler.o main.bin
 	rm -f *.o
 	rm -f *.out
