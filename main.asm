@@ -117,7 +117,3 @@ accept_loop:
         mov     X16, #1     // Service command code 1 terminates this program
         svc     0           // Call MacOS to terminate the program
 
-
-
-
-helloworld:      .ascii  "Hello World!\n"

@@ -2,6 +2,12 @@
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
+#include<arpa/inet.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+#include<sys/uio.h>
+
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +49,30 @@ int main(int argc, char *argv[])
     // read
     char buffer[1024];
     ssize_t bytes_read = read(client_sock, buffer, sizeof(buffer) - 1);
+
+    // write contents of "./index.html" to client
+    int f = open("./index.html", O_RDONLY);
+    if (f < 0) {
+        perror("open");
+        return 1;
+    }
+    struct stat st;
+    if (fstat(f, &st) < 0) {
+        perror("fstat");
+        return 1;
+    }
+    char *file_buffer = malloc(st.st_size);
+    if (file_buffer == NULL) {
+        perror("malloc");
+        return 1;
+    }
+    ssize_t bytes_read_file = read(f, file_buffer, st.st_size);
+    if (bytes_read_file < 0) {
+        perror("read");
+        return 1;
+    }
+    file_buffer[bytes_read_file] = '\0';
+    ssize_t bytes_written = write(client_sock, file_buffer, bytes_read_file);
 
 
     // Close 
